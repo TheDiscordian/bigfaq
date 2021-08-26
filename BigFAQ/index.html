@@ -1,0 +1,112 @@
+<html><head>
+	<title>Big FAQ</title>
+	<link rel="stylesheet" href="bootstrap.min.css">
+	<script src="jquery.min.js"></script>
+
+	<style>
+		.main-body {
+			top:20vh;
+			width:67vw;
+			left:16vw;
+			position:relative;
+			text-align:center;
+		}
+		.searchResults {
+			width:100%;
+			border-radius:0.3em;
+			border-width:1px;
+			border-color:#cfcfcf;
+			border-style:solid;
+			padding:0.333em;
+			text-align:left;
+			background-color:rgba(8, 8, 32, 0.75);
+		}
+
+		.nav-header {
+			position:absolute;
+			right:.333em;
+		}
+
+		.nav-header .active {
+			font-weight:bold;
+		}
+	</style>
+
+	<script>
+		var lastSearch = new Date();
+		var _debug = null;
+
+		function doSearch(query) {
+			if (new Date() - lastSearch < 2000) {
+				return;
+			}
+			$.getJSON("http://localhost:8585?q="+query,function(result){
+				let sR = document.getElementById("searchResults");
+				sR.innerHTML = "<b>Problem (<a target='_blank' href='"+result.Github+"'>Github</a>)</b>: "+result.Challenge+"<br /><br />";
+				if (result.Resolved) {
+					sR.innerHTML += "<b><a href='"+result.URL+"'>Solution</a></b> by <b>"+result.Author+"</b>:<br />&emsp;&emsp;"+result.Answer;
+				} else {
+					sR.innerHTML += "<span style='color:#f00;font-weight:bold;'>Unresolved</span>"
+				}
+				$("#searchResults").fadeIn('slow');
+				console.log(result)
+			});
+			
+		}
+
+		function questionTyped(e) {
+			if (e.keyCode == 13) { 
+				e.preventDefault();
+			}
+			let now = new Date();
+			if (now - lastSearch < 1000) {
+				return;
+			}
+			$("#searchResults").fadeOut('slow');
+			lastSearch = now;
+			if (e.target.value.length < 3) {
+				return;
+			}
+			setTimeout(function(){doSearch(e.target.value)}, 2500);
+		}
+
+		async function onload() {
+			$('#searchResults').hide();
+			$('#challenge-body').hide();
+		}
+
+		function show(what) {
+			switch (what) {
+				case "question":
+					$("#challenge-body").fadeOut('slow');
+					$("#question-body").fadeIn('slow');
+					break;
+				case "challenge":
+					$("#question-body").fadeOut('slow');
+					$("#challenge-body").fadeIn('slow');
+					break;
+			}
+		}
+	</script>
+</head>
+
+<body onload="onload();" style="background-image:url('bg.png');background-size:cover;color:#eee;font-size:1.2em;">
+<div class="nav-header">
+	<span id="nav-ask" class="active" onclick="show('question');">Ask Question</span> | <span id="nav-challenge" onclick="show('challenge');">Add Challenge</span> | <span id="nav-answer" onclick="show('answer');">Add Answer</span>  | <span id="nav-answer" onclick="show('add-question');">Add Question</span>
+</div>
+<div id="question-body" class="main-body">
+	<h1 style="font-size:4em;padding:.1em;">Big FAQ</h1>
+	<form onSubmit="return false;">
+		<input oninput="questionTyped(event);" type="question" class="form-control" id="questionInput" aria-describedby="questionHelp" placeholder="Ask a question, go ahead, don't be shy.">
+	</form>
+	<div id="searchResults" class="searchResults">
+		<span>Searching is not yet implemented.</span>
+	</div>
+</div>
+<div id="challenge-body" class="main-body">
+	<h1 style="font-size:4em;padding:.1em;">Add Challenge</h1>
+	<div class="searchResults"><h2>TODO</h2></div>
+</div>
+<script src="bootstrap.bundle.min.js"></script>
+</body>
+</html>
